@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Epic Clicker Game by Sasha8541</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background: #111; 
+            color: #0f0; 
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
+        }
+        #clicker { 
+            padding: 30px; 
+            font-size: 24px; 
+            background: #ff0000; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer;
+            margin: 20px;
+            box-shadow: 0 0 15px #f00;
+            transition: transform 0.1s;
+        }
+        #clicker:active {
+            transform: scale(0.95);
+        }
+        #shop {
+            margin: 20px;
+            padding: 15px;
+            background: #222;
+            border-radius: 10px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .upgrade {
+            padding: 10px;
+            margin: 5px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .upgrade:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #boss-tax {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+            color: red;
+            font-size: 24px;
+        }
+        #final-message {
+            display: none;
+            color: white;
+            padding: 20px;
+        }
+        #credits {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #555;
+        }
+        #score {
+            font-size: 32px;
+            margin: 20px;
+        }
+        .highlight {
+            color: yellow;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clicker3000 by s8541</h1>
+    <p>Reach <span class="highlight">8,541 points</span> to win!</p>
+    <div id="score">Points: 0</div>
+    <button id="clicker">nuclear button</button>
+    
+    <div id="shop">
+        <h3>The garbage store</h3>
+        <button class="upgrade" id="X2">Buy ×2 Multiplier (500 points)</button>
+        <button class="upgrade" id="X3">Buy ×3 Multiplier (1,500 points)</button>
+        <button class="upgrade" id="auto-click">Buy Auto-Clicker (3,000 points)</button>
+        <button class="upgrade" id="music">Buy Background Music (200 points)</button>
+    </div>
+    
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+    
+    <div id="boss-tax">
+        <h2>THE BOSS TOOK 30% OF YOUR POINTS!</h2>
+    </div>
+    
+    <div id="final-message">
+        <h1>🎉 CONGRATULATIONS! 🎉</h1>
+        <p>You've reached <span class="highlight">8,541 points</span> and won the game!</p>
+        <p>Thanks for playing!</p>
+        <p><em>Now enjoy your reward...</em></p>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    
+    <div id="credits">v3.0</div>
+
+    <script>
+        // Game variables
+        let points = 0;
+        let clickPower = 1;
+        let x2Purchased = false;
+        let x3Purchased = false;
+        let autoClickerActive = false;
+        const bgMusic = document.getElementById("bg-music");
+        let musicPurchased = false;
+
+        // UI elements
+        const clickButton = document.getElementById("clicker");
+        const scoreDisplay = document.getElementById("score");
+        const x2Button = document.getElementById("X2");
+        const x3Button = document.getElementById("X3");
+        const autoClickButton = document.getElementById("auto-click");
+        const musicButton = document.getElementById("music");
+        const finalMessage = document.getElementById("final-message");
+
+        // Click handler
+        clickButton.onclick = () => {
+            points += clickPower;
+            updateScore();
+            
+            if (points >= 8541 && !finalMessage.style.display) {
+                endGame();
+            }
+        };
+
+        // Shop functions
+        x2Button.onclick = () => {
+            if (points >= 500 && !x2Purchased) {
+                points -= 500;
+                clickPower *= 2;
+                x2Purchased = true;
+                x2Button.disabled = true;
+                updateScore();
+            }
+        };
+
+        x3Button.onclick = () => {
+            if (points >= 1500 && !x3Purchased) {
+                points -= 1500;
+                clickPower *= 3;
+                x3Purchased = true;
+                x3Button.disabled = true;
+                updateScore();
+            }
+        };
+
+        musicButton.onclick = () => {
+            if (points >= 200 && !musicPurchased) {
+                points -= 200;
+                musicPurchased = true;
+                bgMusic.play().catch(e => console.log("Audio play failed:", e));
+                musicButton.disabled = true;
+                musicButton.textContent = "Music playing!";
+                updateScore();
+            }
+        };
+
+        autoClickButton.onclick = () => {
+            if (points >= 3000 && !autoClickerActive) {
+                points -= 3000;
+                autoClickerActive = true;
+                autoClickButton.disabled = true;
+                autoClickButton.textContent = "Active!";
+                updateScore();
+                
+                const autoClickInterval = setInterval(() => {
+                    points += clickPower;
+                    updateScore();
+                    if (points >= 8541 && !finalMessage.style.display) {
+                        clearInterval(autoClickInterval);
+                        endGame();
+                    }
+                }, 1000);
+            }
+        };
+
+        // Boss tax event
+        setInterval(() => {
+            if (points > 100 && Math.random() < 0.1) {
+                const tax = Math.floor(points * 0.3);
+                points -= tax;
+                updateScore();
+                document.getElementById("boss-tax").style.display = "flex";
+                setTimeout(() => {
+                    document.getElementById("boss-tax").style.display = "none";
+                }, 2000);
+            }
+        }, 60000);
+
+        // Update score display
+        function updateScore() {
+            scoreDisplay.textContent = `Points: ${points.toLocaleString()}`;
+        }
+
+        // End game function
+        function endGame() {
+            document.body.innerHTML = '';
+            document.body.style.display = "flex";
+            document.body.style.flexDirection = "column";
+            document.body.style.alignItems = "center";
+            document.body.style.justifyContent = "center";
+            document.body.style.height = "100vh";
+            document.body.style.background = "#000";
+            document.body.appendChild(finalMessage);
+            finalMessage.style.display = "block";
+        }
+    </script>
+</body>
+</html>
